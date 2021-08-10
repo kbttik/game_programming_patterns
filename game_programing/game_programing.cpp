@@ -8,10 +8,13 @@
 class Monster {
 public:
 	Monster() {};
-	virtual ~Monster() {};
+	virtual ~Monster() { std::cout << "倒しました！" << std::endl; };
 };
 
-//幽霊クラスを作る（インスタンスする本体）.
+// 幽霊クラスを作る（インスタンスする本体）.
+// 仮想関数に変えて、Monsterクラスのポインタであっても、動的結合でこっちを呼び出すようにする
+// コンストラクタは仮想関数にはならない？
+// https://skpme.com/680/
 class Ghost :public Monster {
 public:
 	Ghost(int health, int speed)
@@ -72,15 +75,18 @@ int main()
 {
 	// 基底クラス(Monster)しか扱えないが、どうやってGhostまで戻すのか。。。(Ghostのメンバ変数にどうアクセスするのか)
 	Spawner* ghostSpawner = new Spawner(spawnGhost);
-	// 参照戻しで、Monsterオブジェクトにアクセス
-	Monster ghost = *ghostSpawner->spawnMonster();
+	// spawnMonster()の返り値は、引数で渡したspawnXXX関数が実行されて返ったMonsterポインタ型のモンスター
+	// 生成されたモンスターオブジェクトにアクセスしたいため、Ghostクラスのポインタにキャストしておく
+	Ghost* ghost = ((Ghost*)ghostSpawner->spawnMonster());
 	// Monsterポインタをghost2に入れる
 	Monster* ghost2 = ghostSpawner->spawnMonster();
 
 	//Spawner* ghostSpawner = new Spawner(spawnGhost(50, 60));
 	printf("main = %p\n", main);
-	printf("ゴーストをスポーン(値) health:%s\n", "1");
-	printf("ゴーストをスポーン(ポインタ) %p\n", &ghost);
+
+	// 参照渡しで、Ghostオブジェクトに直接アクセス
+	printf("ゴーストをスポーン(値) health:%d, speed:%d\n", ghost->get_health(), ghost->get_speed());
+	printf("ゴーストをスポーン(アドレス) %p\n", ghost);
 
 	return 0;
 };
